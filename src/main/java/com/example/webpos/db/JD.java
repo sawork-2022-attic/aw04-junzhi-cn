@@ -6,6 +6,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
@@ -31,6 +32,7 @@ public class JD implements PosDB {
     }
 
     @Override
+    @Cacheable("product")
     public Product getProduct(String productId) {
         for (Product p : getProducts()) {
             if (p.getId().equals(productId)) {
@@ -40,6 +42,7 @@ public class JD implements PosDB {
         return null;
     }
 
+    @Cacheable("result of searching 'java'")
     public static List<Product> parseJD(String keyword) throws IOException {
         //获取请求https://search.jd.com/Search?keyword=java
         String url = "https://search.jd.com/Search?keyword=" + keyword;
@@ -60,7 +63,7 @@ public class JD implements PosDB {
             String img = "https:".concat(el.getElementsByTag("img").eq(0).attr("data-lazy-img"));
             String price = el.getElementsByAttribute("data-price").text();
             String title = el.getElementsByClass("p-name").eq(0).text();
-            if (title.indexOf("，") >= 0)
+            if (title.contains("，"))
                 title = title.substring(0, title.indexOf("，"));
 
             Product product = new Product(id, title, Double.parseDouble(price), img);
